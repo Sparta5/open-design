@@ -1,6 +1,6 @@
-import type { NextConfig } from 'next';
-import { dirname, isAbsolute, relative } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import type { NextConfig } from "next";
+import { dirname, isAbsolute, relative } from "node:path";
+import { fileURLToPath } from "node:url";
 
 // Daemon port the local Express server binds to (see apps/daemon/src/cli.ts). The
 // dev-all launcher overrides OD_PORT after probing for a free port; we read
@@ -16,14 +16,16 @@ const DAEMON_ORIGIN = `http://127.0.0.1:${DAEMON_PORT}`;
 // runtime — Next.js generates one shell HTML, the daemon falls back to it
 // for any non-API request, and the existing client router renders the right
 // view.
-const isProd = process.env.NODE_ENV !== 'development';
+const isProd = process.env.NODE_ENV !== "development";
 
 const WEB_ROOT = dirname(fileURLToPath(import.meta.url));
 
 function resolveDevDistDir() {
   const configured = process.env.OD_WEB_DIST_DIR;
-  if (!configured) return '.next';
-  return isAbsolute(configured) ? relative(WEB_ROOT, configured) || '.' : configured;
+  if (!configured) return ".next";
+  return isAbsolute(configured)
+    ? relative(WEB_ROOT, configured) || "."
+    : configured;
 }
 
 const DEV_DIST_DIR = resolveDevDistDir();
@@ -31,21 +33,25 @@ const DEV_DIST_DIR = resolveDevDistDir();
 function resolveDevTsconfigPath() {
   const configured = process.env.OD_WEB_TSCONFIG_PATH;
   if (!configured) return undefined;
-  return isAbsolute(configured) ? relative(WEB_ROOT, configured) || 'tsconfig.json' : configured;
+  return isAbsolute(configured)
+    ? relative(WEB_ROOT, configured) || "tsconfig.json"
+    : configured;
 }
 
 const DEV_TSCONFIG_PATH = resolveDevTsconfigPath();
 
 const nextConfig: NextConfig = {
-  allowedDevOrigins: ['127.0.0.1'],
+  allowedDevOrigins: ["127.0.0.1"],
   reactStrictMode: true,
-  ...(DEV_TSCONFIG_PATH ? { typescript: { tsconfigPath: DEV_TSCONFIG_PATH } } : {}),
+  ...(DEV_TSCONFIG_PATH
+    ? { typescript: { tsconfigPath: DEV_TSCONFIG_PATH } }
+    : {}),
   // Keep the bundle output predictable so the daemon's STATIC_DIR can point
   // at it without any glob trickery.
-  distDir: isProd ? 'out' : DEV_DIST_DIR,
+  distDir: isProd ? "out" : DEV_DIST_DIR,
   ...(isProd
     ? {
-        output: 'export' as const,
+        // output: 'export' as const,
         // `next export` skips trailing slashes by default; opting in keeps
         // the daemon's static fallback simple (every directory has its own
         // index.html on disk).
@@ -59,13 +65,22 @@ const nextConfig: NextConfig = {
           // CORS gymnastics. SSE on /api/chat works through this rewrite
           // because Next.js's dev server streams responses unbuffered.
           return [
-            { source: '/api/:path*', destination: `${DAEMON_ORIGIN}/api/:path*` },
-            { source: '/artifacts/:path*', destination: `${DAEMON_ORIGIN}/artifacts/:path*` },
-            { source: '/frames/:path*', destination: `${DAEMON_ORIGIN}/frames/:path*` },
+            {
+              source: "/api/:path*",
+              destination: `${DAEMON_ORIGIN}/api/:path*`,
+            },
+            {
+              source: "/artifacts/:path*",
+              destination: `${DAEMON_ORIGIN}/artifacts/:path*`,
+            },
+            {
+              source: "/frames/:path*",
+              destination: `${DAEMON_ORIGIN}/frames/:path*`,
+            },
           ];
         },
         devIndicators: {
-          position: 'bottom-right',
+          position: "bottom-right",
         },
       }),
 };
